@@ -1,0 +1,895 @@
+---
+title: "INTRODUCTION TO DATA VISUALIZATION IN R & RSTUDIO"
+author: "D.K.MURIITHI"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	#fig.height = 4,
+	#fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	comment = NA)
+```
+
+## Confirmation and setting of working directory
+
+Working directory in R is the default location on your computer where R reads and writes files.
+
+Setting the working directory ensures that your files are saved and loaded from the intended locations, streamlining your workflow
+
+```{r}
+setwd("~/TMMS2024")
+```
+
+
+## Installation and loading of necessary packages/libraries
+
+## Loading libraries
+```{r}
+library(tidyverse)    ##for data manipulation
+library(psych)          ##for description of  data
+library(summarytools)   ##for summarizing data
+library(sjmisc)       ##for data manipulation
+```
+
+## Load Example data 
+```{r}
+malaria_data <- read.csv("mockdata_cases.csv")
+mosquito_data <- read.csv("mosq_mock.csv")
+```
+
+## Characterizing the data
+Before we start visualizing our data, we need to understand the characteristics of our data. The goal is to get an idea of the data structure and to understand the relationships between variables.
+
+## Explore the structure and summary of the datasets
+```{r}
+dim(malaria_data)             ##Dimension of the data set
+str(malaria_data)             ##structure of the data set
+```
+
+```{r}
+head(malaria_data)      ##View the first few rows
+```
+
+```{r}
+#summary(malaria_data)                       ##summary of descriptive statistics
+```
+
+```{r}
+describe(malaria_data)                     ##summary of descriptive statistics
+```
+
+
+## We should also explore individual columns/variables
+
+```{r}
+#malaria_data$location          ##values for a single column (locations)
+#malaria_data$month            ##values for a single column (month)
+#malaria_data$year             ##values for a single column (year)
+```
+
+
+```{r}
+unique(malaria_data$location)  ## unique values for a single column
+```
+
+```{r}
+table(malaria_data$location)   ## frequencies for a single column (location)
+frq(malaria_data$location)
+```
+
+```{r}
+#prop.table(table(malaria_data$location)) # percentages for a single column
+```
+
+
+```{r}
+table(malaria_data$location, malaria_data$year)  # frequencies for multiple columns
+```
+
+# check for missing values in each column, as these can affect our visualizations.
+```{r}
+sum(is.na(malaria_data))      ##checking for missing values in the data set
+```
+# Check Columns with Missing values in the data set
+```{r}
+library(kableExtra)
+missing_values <- colSums(is.na(malaria_data))
+kable(missing_values)
+```
+# ---------------------------------------------------------------------------
+# Challenge 1: Explore the structure and summary of the mosquito_data dataset
+# ---------------------------------------------------------------------------
+What are the dimensions of the dataset?
+
+What are the column names?
+
+What are the column types?
+```{r}
+#sapply(mosquito_data, class)
+```
+What are some key variables or relationships that we can explore?
+
+# ---------------------------------------------------------------------------
+# Data Visualization Using Base R Functions
+# ---------------------------------------------------------------------------
+First, we will look at some exploratory data visualization techniques using base R functions. 
+The purpose of these plots is to help us understand the relationships between variables and characteristics of our data. They are useful for quickly exploring the data and understanding the relationships, but they are not great for sharing in scientific publications/presentations.
+
+## (OBJECTIVE) After completing this session, you should be able to;
+
+# Explain the various types of graphics available in R
+# List the possible file formats of graphic outputs
+# Describe the methods to save graphics as files
+# Describe the procedure to export graphs in Rstudio
+
+## Graphics in R
+R includes powerful packages of graphics that help in data visualization. These graphics can be: Viewed on the screen, saved in various formats such as ,pdf, .png, .jpg etc and customized according to the varied graphic needs. 
+
+## Types of Graphics
+R supports 8 types of graphics: Bar charts, Pie Charts, Histogram, line charts, box plot, Kernel density plot, Heat map, word cloud.
+
+
+# Single variable comparison
+
+#1. Histogram
+For one variable comparison, we can use hist() function to create a histogram.
+Histogram displays the distribution of continuous variable and the frequency of scores in each bin on y-axix by dividing the ranges of scores into bins on the x-axis
+
+```{r}
+hist(malaria_data$prev)
+hist(malaria_data$prev, col = "tomato")
+```
+
+# Alternatively
+```{r}
+hist(malaria_data$prev, 
+    breaks = 5, 
+    col = "tomato",
+    border = "darkblue",
+    main = "Distribution of Malaria Prevalence",
+    xlab = "Malaria Prevalence",
+    ylab = "Frequency")
+```
+#2. Kernel Density Plots
+These display the distribution of a continuous variable much more efficiently than histogram
+
+The density plot is useful for visualizing changes in distributions of a continuous variable
+
+```{r}
+density <- density(malaria_data$prev)
+
+plot(density)
+polygon(density, col="red",border="black")
+```
+
+
+```{r}
+#Save as PDF in Rstudio
+pdf("Density Plots.pdf", width = 8, height = 6)      # Open PDF device
+plot(density)                                               # Create the plot
+polygon(density, col="red",border="black")                  
+dev.off()                                                   # Close device & finalize the file
+```
+
+#3. Line chart
+Line charts represent a series of data point connected by a straight line and are generally used to visualize data that changes over time.
+
+```{r}
+plot(malaria_data$total, malaria_data$positive, type ="l")
+```
+
+
+#4. Barplot
+Another useful function for single variable comparisons is barplot(). In this case, we will use the table() function to count the number of observations in each category, then use barplot() to create a barplot.
+
+Barcharts are horizontal or vertical bars to show comparisons between categorical values.  They represent lengths, frequency or proportions of categorical values
+
+```{r}
+counts <- table(malaria_data$year)
+barplot(counts)
+```
+
+```{r}
+counts <- table(malaria_data$year)
+counts
+barplot(counts,
+        col=c("blue", "red", "green"),
+        main= "Simple Bar chart",
+        xlab= "Year",
+        ylab="Frequency")
+```
+
+
+```{r}
+#Save as PNG in Rstudio
+png("Simple Bar chart.png")                       # Open PNG device
+barplot(counts,                                   # Create the plot
+        col=c("red", "blue", "green"),
+        main= "Simple Bar chart",
+        xlab= "Year",
+        ylab="Frequency")               
+dev.off()                                          # Close device
+```
+
+
+```{r}
+#Save as PDFin Rstudio
+pdf("Simple Bar chart.pdf")                       # Open PDF device
+barplot(counts,                                   # Create the plot
+        col=c("red", "blue", "green"),
+        main= "Simple Bar chart",
+        xlab= "Year",
+        ylab="Frequency")               
+dev.off()                                          # Close device
+```
+# Pie charts
+It is a type of graph in which a circle is divided into sectors, each representing a proportion of the whole.
+```{r}
+df <- prop.table(table(malaria_data$location))
+p1 <- pie(df, 
+          labels=paste(names(df),"(", round(df*100,1),"%)"),col=c("green","tomato","blue","purple","black"),
+          main="Malaria cases Distribution by Location")
+```
+
+
+```{r, fig.width=10, fig.height=7}
+library(plotrix)
+df <- prop.table(table(malaria_data$location))
+p2 <- pie3D(df, 
+          labels=paste(names(df),"(", round(df*100,1),"%)"),col=c("green","tomato","blue","purple","lightblue"),
+          main="Malaria cases Distribution by Location")
+```
+
+```{r}
+library(plotly)
+df <- as.data.frame(table(malaria_data$location))
+colnames(df) <- c("location", "freq")
+
+
+fig <- plot_ly(df,
+               labels = ~df$location,
+               values = ~df$freq,
+               type = 'pie',
+               hole = 0.3,                  # Makes a doughnut chart; set to 0 for a full pie chart
+               textinfo = 'label+percent',  # Shows both labels and percentages
+               marker = list(colors = colorRampPalette(c('blue', 'green', 'tomato', 'skyblue'))(nrow(df))))
+
+fig
+```
+
+
+# Multiple variables
+For multiple variables, we can use plot() function to create a scatterplot, multiple bar chart, boxplot etc. 
+
+In this case, we will use plot() to create a scatterplot. The first argument in plot() is the x variable, and the second argument is the y variable.
+
+# scatterplot
+```{r}
+plot(malaria_data$total, malaria_data$positive)
+plot(malaria_data$total, malaria_data$positive, col="red")
+```
+
+
+```{r}
+#Save as JPEG in Rstudio
+jpeg("Scatter plot.jpg")                                        # Open JPEG device
+plot(malaria_data$total, malaria_data$positive, col="red")      # Create the plot
+dev.off()                                                       # Close device
+```
+# Multiple Bar chart
+```{r,fig.height=6}
+counts <- table(malaria_data$year,malaria_data$ages)
+barplot(counts,
+       col=c("red", "blue", "green"),
+        main= "Multiple Bar chart",
+        xlab= "Age Group",
+        ylab="Frequency",
+        legend=rownames(counts), beside=T)
+```
+# Boxplot
+
+A boxplot, also known as a box-and-whisker plot, is a standardized way of displaying the distribution of data based on a five-number summary: minimum, first quartile (Q1), median, third quartile (Q3), and maximum.
+
+# Importance of Boxplots
+  * Provide a clear and concise visual summary of the data distribution, showing central tendency,                    variability, and symmetry or skewness.
+  
+  * They are excellent tools for comparing distributions across different groups or categories, allowing quick        visual comparisons.
+  
+  * Identifying Outliers: Boxplots help identify outliers in the data, which can be crucial for understanding data     quality and distribution.
+  
+  * Understanding Spread: They reveal the spread and range of the data, indicating the variability within the         dataset
+  
+```{r}
+boxplot(malaria_data$prev ~ malaria_data$location) 
+boxplot(malaria_data$prev ~ malaria_data$location, col="tomato") 
+
+#Save as TIFF in Rstudio
+tiff("Box-and-Whisker plot.tiff", width = 800, height = 600)          # Open TIFF device
+boxplot(malaria_data$prev ~ malaria_data$location, col="tomato")      # create the plot
+dev.off ()                                                            # Close device
+```
+
+# ---------------------------------------------------------------------------
+# Challenge 2: Create R base visualizations of the ‘mosquito_data’ dataset
+# ---------------------------------------------------------------------------
+Are their any interesting patterns in individual variables/columns?
+Are there any relationships between variables/columns?
+# --------------------------------------------------------------------------
+# Data Visualization with ggplot2 
+# --------------------------------------------------------------------------
+Base R functions like hist() and barplot() are great for quickly exploring our data, but we may want to use more powerful visualization techniques when preparing outputs for scientific reports, presentations, and publications.
+
+The ggplot2 package is a popular visualization package for R. It provides an easy-to-use interface for creating data visualizations. The ggplot2 package is based on the “grammar of graphics” and is a powerful way to create complex visualizations that are useful for creating scientific and publication-quality figures.
+
+The “grammar of graphics” used in ggplot2 is a set of rules that are used to develop data visualizations using a layering approach. Layers are added using the ‘+’ operator.
+
+# Components of a ggplot
+There are three main components of a ggplot: 
+1. The data: the dataset we want to visualize 
+2. The aesthetics: the visual properties from the data used in the plot 
+3. The geometries: the visual representations of the data (e.g., points, lines, bars)
+
+# The data
+All ggplot2 plots require a data frame as input. Just running this line will produce a blank plot because we have stated which elements from the data we want to visualize or how we want to visualize them.
+
+```{r}
+ggplot(data = malaria_data) 
+```
+
+# The aesthetics
+Next, we need to specify the visual properties of the plot that are determined by the data. The aesthetics are specified using the aes() function. The output should now produce a blank plot but with determined visual properties (e.g., axes labels).
+
+```{r}
+ggplot(data = malaria_data, aes(x = total, y = positive)) 
+```
+
+# The geometries
+Finally, we need to specify the visual representation of the data. The geometries are specified using the geom_* function. There are many different types of geometries that can be used in ggplot2. We will use geom_point() in this example and we will append it to the previous plot using the + operator. The output should now produce a plot with the specified visual representation of the data.
+
+```{r}
+library(ggthemes)
+ggplot(data = malaria_data, aes(x = total, y = positive)) + 
+  geom_point()
+
+ggplot(data = malaria_data, aes(x = total, y = positive)) + 
+  geom_point(colour = "tomato")
+```
+
+
+```{r}
+library(ggpubr)
+ggplot(data = malaria_data, aes(x = total, y = positive)) + 
+  geom_point(colour = "tomato") +
+  theme_classic()
+
+ggplot(data = malaria_data, aes(x = total, y = positive)) + 
+  geom_point(colour = "tomato") +
+  theme_economist()
+
+ggplot(data = malaria_data, aes(x = total, y = positive)) + 
+  geom_point(colour = "tomato") +
+  theme_pubclean()
+```
+
+```{r}
+ggplot(data = malaria_data, aes(x = total, y = positive, color = location)) + 
+  geom_point() +
+  theme_economist()
+```
+
+
+```{r}
+ggplot(data = malaria_data, aes(x = total, y = positive)) + 
+  geom_point() +
+  geom_smooth(method = "lm")  # The smooth geom add a smoothed line to the plot
+
+ggplot(data = malaria_data, aes(x = total, y = positive, color = year)) + 
+  geom_point() +
+  facet_wrap(~year) +
+  theme_bw()
+
+ggplot(data = malaria_data, aes(x = total, y = positive, color = location)) + 
+  geom_point() +
+  facet_wrap(~year) +
+  theme_bw()
+
+ggplot(data = malaria_data, aes(x = total, y = positive, color = location)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +  # The smooth geom add a smoothed line to the plot
+  theme_classic()
+
+ggplot(data = malaria_data, aes(x = total, y = positive, color = location)) + 
+  geom_point() +
+  stat_ellipse() +
+  theme_classic()
+```
+
+```{r}
+ggplot(data = malaria_data, aes(x= prev))+
+  geom_histogram(bins = 5, fill = "tomato", color = "blue") +
+  theme_economist()
+
+ggplot(data = malaria_data, aes(x= prev))+
+  geom_histogram(bins = 5, fill = "tomato", color = "blue") +
+  theme_classic()
+```
+
+
+#Here are some examples of different geom functions:
+
+# Example data
+data <- data.frame(Category = c("A", "B", "C", "A", "B", "C", "A", "A", "B", "C"))
+
+# Plotting a bar chart
+
+```{r}
+ggplot(data = malaria_data, aes(x = year)) +
+  geom_bar(fill = "blue") +                    # the "fill" argument specifies the color of the bars
+  theme_pubclean()
+
+ggplot(data = malaria_data, aes(x = year)) +
+  geom_bar(fill = "tomato") +
+  labs(title="Simple Bar Plot",
+       x="Year",
+       y="Frequency",
+       caption = "Source: Malaria data") +
+  theme_classic()
+```
+
+When using the aes() function, the visual properties will be determined by a variable in the dataset. This allows us to visualize relationships between multiple variables at the same time.
+
+```{r}
+# Compute the frequency
+df <- malaria_data %>%
+  group_by(year) %>%
+  summarise(counts = n())
+
+# Create the bar plot
+ggplot(df, aes(x = year, y = counts)) +
+  geom_bar(fill = "tomato", stat = "identity") +
+  geom_text(aes(label = counts), vjust = -0.3) +
+  labs(title="Simple Bar Plot",
+       x="Year",
+       y="Frequency",
+       caption = "Source: Malaria data") +
+  theme_classic()
+```
+
+# Multiple Bar chart
+```{r}
+#frq(malaria_data, ages)
+ggplot(data = malaria_data, aes(x = ages, y=positive, fill = ages)) +
+  geom_bar(stat = "identity") +
+  labs(title="Multiple Bar Plot",
+       x="Age Group",
+       y="Malaria Positive Cases Reported",
+       caption = "Source: Malaria data") +
+  theme_classic()
+
+
+# Create multiple bar plots using facet_wrap()
+ggplot(data = malaria_data, aes(x = ages, y=positive, fill = ages)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~year) +
+  labs(title="Multiple Bar Plot by year",
+       x="Age Group",
+       y="Malaria Positive Cases Reported",
+       caption = "Source: Malaria data") +
+  theme_classic()
+```
+
+# Multiple Histogram
+```{r}
+ggplot(data = malaria_data, aes(x= prev, fill = ages))+
+  geom_histogram(bins = 10) +
+  theme_classic()
+
+ggplot(data = malaria_data, aes(x= prev, fill = ages))+
+  geom_histogram(bins = 10, color ="black") +
+  labs(title = "Multiple Histogram by Age group",
+       x="Malaria Prevalance Rate",
+       y="Numver of Malaria case",
+       caption = "Source: Malaria data") +
+  theme_classic()
+```
+```{r}
+ggplot(data = malaria_data, aes(x = prev, fill = ages)) +
+  geom_histogram(color = "black") +
+theme_classic()
+```
+# Density ridgeline plot
+The density ridgeline plot is useful for visualizing changes in distributions of a continuous variable, over time or space. Ridgeline plots are partially overlapping line plots that create the impression of a mountain range.
+
+```{r}
+library(ggridges)
+ggplot(malaria_data, aes(x = prev, y = ages, fill = ages)) +
+  geom_density_ridges() 
+```
+
+# -------------------------------------------------------------------------
+# Challenge 3: Create ggplot2 visualizations of the ‘mosquito_data’ dataset
+# -------------------------------------------------------------------------
+Are their any interesting patterns in individual variables/columns?
+How can we use the aes() function to view multiple variables in a single plot?
+Are there any additional geometries that may be useful for visualizing this dataset?
+
+#The examples above show how to use colors for categorical variables, but we can also use custom color palettes for continuous variables.
+
+```{r}
+ggplot(data = malaria_data, aes(x = total, y = positive, color = prev)) +
+  geom_point() +
+  scale_color_gradient(low = "blue", high = "red")
+```
+
+```{r}
+ggplot(data = malaria_data, aes(x = total, y = positive, color = prev)) +
+  geom_point() +
+  # use viridis package to create custom color palettes
+  scale_color_viridis_c(option = "magma")  
+```
+
+
+
+```{r}
+ggplot(data = malaria_data, aes(x = location, y = prev)) +
+  geom_boxplot(fill = "lightblue") +
+  geom_jitter(alpha = 0.2) +
+  theme_classic()
+```
+
+
+```{r}
+ggplot(data = malaria_data, aes(x = location, y = prev, fill = location)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.2, aes(color = location)) +
+  theme_classic()
+```
+
+
+```{r}
+library(ggpubr)
+p <- ggplot(data = malaria_data, aes(x = location, y = prev, fill = location)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.2, aes(color = location)) 
+  # theme_classic()
+
+#  Add p-value
+p + stat_compare_means()
+```
+# Violin plots
+
+Violin plots are similar to box plots, except that they also show the kernel probability density of the data at different values. Typically, violin plots will include a marker for the median of the data and a box indicating the interquartile range, as in standard box plots.
+
+Key function:
+
+geom_violin(): Creates violin plots. Key arguments:
+fill: Areas fill color
+Create basic violin plots with summary statistics:
+
+```{r}
+ggplot(data = malaria_data, aes(x = location, y = prev)) +
+  geom_violin(fill = "tomato") +
+  geom_jitter(alpha = 0.2) +
+  theme_classic()
+```
+
+# Sinaplot
+sinaplot is inspired by the strip chart and the violin plot. By letting the normalized density of points restrict the jitter along the x-axis, the plot displays the same contour as a violin plot, but resemble a simple strip chart for small number of data points (Sidiropoulos et al. 2015).
+
+In this way the plot conveys information of both the number of data points, the density distribution, outliers and spread in a very simple, comprehensible and condensed format.
+
+Key function: geom_sina() [ggforce]:
+
+```{r}
+library(ggforce)
+# Create some data
+d1 <- data.frame(
+  MalariaPositiveCases = c(rnorm(200, 4, 1), rnorm(200, 5, 2), rnorm(400, 6, 1.5)),
+  ageGroup = rep(c("under 5 years", "5 to 15 years", "Above 15 years"), c(200, 200, 400)))
+
+# Sinaplot
+ggplot(d1, aes(ageGroup,  MalariaPositiveCases)) +
+  geom_sina(aes(color = ageGroup), size = 0.7)+
+  scale_color_manual(values =  c("red", "blue", "green"))
+```
+
+#Correlation matrix with ggally package
+```{r}
+library(GGally)
+
+# correlation analysis 
+data(malaria_data)
+ggpairs(malaria_data, columns = 5:6, ggplot2::aes(colour=location))
+```
+
+# Scatterplot
+```{r}
+library(ggplot2)
+library(ggExtra)
+
+g <- ggplot(malaria_data, aes(total, positive)) + 
+  geom_count(color = "red") + 
+  geom_smooth(method="lm", se=F) 
+
+ggMarginal(g, type = "histogram", fill="blue")
+
+ggMarginal(g, type = "boxplot", fill="transparent")
+
+ggMarginal(g, type = "density", fill="blue")
+```
+
+```{r}
+library(leaflet)
+# Sample data
+attach(malaria_data)
+
+# Create an interactive map with leaflet
+leaflet(malaria_data) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~xcoord, ~ycoord,
+    radius = ~prev *10,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.5,
+    label = ~paste0(location, ": ", prev)) %>%
+  addLegend("bottomright", 
+            colors = "red", 
+            labels = "Malaria Prevalence",
+            title = "Prevalence")
+```
+
+## Global Map using Malaria Data from KNBS
+```{r}
+data <- read.csv("malaria_survey_data1.csv")
+
+### Code the Counties and Give their Appropriate Name
+data$County <- factor(data$County, levels = c(101, 201, 202, 203, 204, 205, 301, 302, 303, 304, 305, 306,
+            401, 402, 403, 404, 405, 406, 407, 408, 501, 502, 503, 601, 602,
+            603, 604, 605, 606, 701, 702, 703, 704, 705, 706, 707, 708, 709,
+            710, 711, 712, 713, 714, 801, 802, 803, 804),
+            labels = c("nairobi", "nyandarua", "nyeri", "kirinyaga", "muranga", "kiambu",
+            "mombasa", "kwale", "kilifi", "tana river", "lamu", "taita taveta",
+            "marsabit", "isiolo", "meru", "tharaka", "embu", "kitui", "machakos",
+            "makueni", "garissa", "wajir", "mandera", "siaya", "kisumu", "migori",
+            "homa bay", "kisii", "nyamira", "turkana", "west pokot", "samburu",
+            "trans-nzoia", "baringo", "uasin gishu", "elgeyo marakwet", "nandi",
+            "laikipia", "nakuru", "narok", "kajiado", "kericho", "bomet", "kakamega",
+            "vihiga", "bungoma", "busia"))
+
+gps <- read.csv("longitude_latitude.csv")
+## Merge the data set
+data <- merge(gps, data, by = "County", all.x = TRUE)
+```
+
+## Mapping of Malaria Occurrences
+```{r}
+library(leaflet)
+
+# Create an interactive map with leaflet
+leaflet(data) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~Longitude, ~Latitude,
+    radius = ~Presence_of_Species_Falciparum*2,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.5,
+    label = ~paste0(County, ": ", Presence_of_Species_Falciparum)) %>%
+  addLegend("bottomright", 
+            colors = "red", 
+            labels = "Malaria Results",
+            title = "Positive Malaria Test Results")
+```
+
+
+```{r}
+library(paletteer)
+library(leaflet)
+# Sample data 
+africa <- read.csv("DatasetAfricaMalaria.csv", header = TRUE)
+
+# Create an interactive map with leaflet
+leaflet(africa) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    radius = ~Incidence.of.malaria..per.1.000.population.at.risk.*0.01,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.5,
+    label = ~paste0(Country.Name, ": ", Incidence.of.malaria..per.1.000.population.at.risk.)) %>%
+  addLegend("bottomright", 
+            colors = "red", 
+            labels = "Malaria Prevalence",
+            title = "Prevalence in Africa")
+```
+
+
+## Mapping of Malaria Occurrences
+```{r}
+library(leaflet)
+
+# Create an interactive map with leaflet
+leaflet(data) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~Longitude, ~Latitude,
+    radius = ~Final_Malaria_Test_Results*3,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.5,
+    label = ~paste0(County, ": ", Final_Malaria_Test_Results)) %>%
+  addLegend("bottomright", 
+            colors = "red", 
+            labels = "Malaria Results",
+            title = "Positive Malaria Test Results")
+
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(paletteer)
+
+# Load the data
+df <- read.csv("https://raw.githubusercontent.com/holtzy/The-Python-Graph-Gallery/master/static/data/simple-scatterplot.csv")
+
+# Create the ggplot
+ggplot(df, aes(x = gdpPercap, y = lifeExp, size = pop, color = continent)) +
+  geom_point(size=3) +
+  scale_fill_paletteer_d("nationalparkcolors::Acadia") +
+  theme(legend.position = "none")
+```
+
+
+
+
+```{r, fig.height=6, fig.width=6}
+dat<-data.frame(t=seq(0,2*pi,by=0.1))
+xhrt<-function(t)16*sin(t)^3
+yhrt<-function(t)13*cos(t)-5*cos(2*t)-2*cos(3*t)-cos(4*t) 
+dat$y=yhrt(dat$t)
+dat$x=xhrt(dat$t)
+with(dat,plot(x,y,type="l"))
+with(dat,polygon(x,y,col="red"))
+```
+
+
+```{r}
+# Load the libraries
+library(sf)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+# Load the Africa map data
+africa <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf")
+# Example malaria data
+malaria_data <- data.frame(
+  country = c("Nigeria", "Democratic Republic of the Congo", "Uganda", "Mozambique", "Ghana",
+              "Burkina Faso", "Niger", "Tanzania", "Mali", "Angola", "Kenya"),
+  cases = c(250000, 150000, 100000, 80000, 60000, 600000, 52000, 470000, 43000, 390000, 450000))
+
+# Merge the malaria data with the Africa spatial data
+africa_malaria <- merge(africa, malaria_data, by.x = "name", by.y = "country", all.x = TRUE)
+
+# Plot the map
+ggplot(data = africa_malaria) +
+  geom_sf(aes(fill = cases), color = "white") +
+  scale_fill_gradient(low = "lightyellow", high = "red", na.value = "gray90", name = "Malaria Cases") +
+  theme_minimal() +
+  labs(title = "Malaria Cases in Africa (Synthetic data)", subtitle = "Colored by number of positive cases") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5))
+
+# Save the map as a PDF
+#pdf("malaria positive cases in Africa map.pdf", width = 8, height = 6)  # Set dimensions (in inches)
+#print(map)  # Print the map plot to the PDF file
+#dev.off()  # Close the PDF device
+```
+
+
+
+
+
+
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(title = "Data Visualization in R"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+      menuItem("Raw data", tabName = "data", icon = icon("table"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      # First tab content (dashboard)
+      tabItem(tabName = "dashboard",
+        fluidRow(
+          box(plotOutput("plot1"), width = 6),
+          box(plotOutput("plot2"), width = 6)
+        )
+      ),
+      # Second tab content (data table)
+      tabItem(tabName = "data",
+        fluidRow(
+          box(tableOutput("table"), width = 12)
+        )
+      )
+    )
+  )
+)
+
+```
+
+
+```{r}
+server <- function(input, output) {
+  # Sample data
+  malaria_data <- read.csv("mockdata_cases.csv")
+  
+  # Render plot1
+  output$plot1 <- renderPlot({
+    ggplot(data = malaria_data, aes(x = location, y = prev, fill = location)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.2, aes(color = location)) +
+  theme_classic()
+
+  
+  })
+  output$plot2 <- renderPlot({
+  ggplot(data = malaria_data, aes(x= prev, fill = ages))+
+  geom_histogram(bins = 10, color ="black") +
+  labs(title = "Multiple Histogram by Age group",
+       x="Malaria Prevalance Rate",
+       y="Numver of Malaria case",
+       caption = "Source: Malaria data") +
+  theme_classic()
+  })
+  
+  
+   # Render data table
+  output$table <- renderTable({
+    malaria_data
+  })
+}
+shinyApp(ui = ui, server = server)
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
